@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-tag` will be documented in this file.
 
+## v1.0.3 - 2026-03-22
+
+->tag() does not overwrite the tag
+
 ## v1.0.2 - 2026-03-22
 
 Fixed composer metadata
