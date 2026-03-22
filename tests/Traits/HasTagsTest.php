@@ -3,14 +3,10 @@
 declare(strict_types=1);
 
 use Foodieneers\Tag\Models\Tag;
-use Foodieneers\Tag\Tests\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 test('user can have tags', function () {
-    $user = User::query()->create([
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
-        'password' => bcrypt('password'),
-    ]);
+    $user = createUser();
 
     $tag1 = Tag::factory()->create(['name' => 'developer']);
     $tag2 = Tag::factory()->create(['name' => 'admin']);
@@ -19,15 +15,12 @@ test('user can have tags', function () {
 
     expect($user->tags)->toHaveCount(2)
         ->and($user->tags->pluck('name')->toArray())->toEqualCanonicalizing(['developer', 'admin']);
+
+    expect($user->tags())->toBeInstanceOf(BelongsToMany::class);
 });
 
 test('user can attach and detach tags', function () {
-    $user = User::query()->create([
-        'name' => 'Jane Doe',
-        'email' => 'jane@example.com',
-        'password' => bcrypt('password'),
-    ]);
-
+    $user = createUser();
     $tag = Tag::factory()->create(['name' => 'moderator']);
 
     $user->tags()->attach($tag->id);
@@ -38,11 +31,7 @@ test('user can attach and detach tags', function () {
 });
 
 test('user can sync tags', function () {
-    $user = User::query()->create([
-        'name' => 'Sync User',
-        'email' => 'sync@example.com',
-        'password' => bcrypt('password'),
-    ]);
+    $user = createUser();
 
     $tag1 = Tag::factory()->create(['name' => 'tag-a']);
     $tag2 = Tag::factory()->create(['name' => 'tag-b']);
@@ -56,11 +45,7 @@ test('user can sync tags', function () {
 });
 
 test('pivot includes created_at', function () {
-    $user = User::query()->create([
-        'name' => 'Pivot User',
-        'email' => 'pivot@example.com',
-        'password' => bcrypt('password'),
-    ]);
+    $user = createUser();
 
     $tag = Tag::factory()->create(['name' => 'pivot-test']);
     $user->tags()->attach($tag->id);
@@ -70,4 +55,29 @@ test('pivot includes created_at', function () {
     expect($pivot->tag_id)->toBe($tag->id)
         ->and($pivot->model_id)->toBe($user->id)
         ->and($pivot->created_at)->not->toBeNull();
+});
+
+test('tag attaches tag by name', function () {
+    $user = createUser();
+
+    $user->tag('Test Tag');
+
+    expect($user->tags)->toHaveCount(1);
+    expect($user->tags->first()->name)->toBe('Test Tag');
+    $pivot = $user->tags->first()->pivot;
+    expect($pivot->created_at)
+        ->not->toBeNull()
+        ->and($pivot->created_at->diffInSeconds(now()))->toBeLessThan(5);
+
+});
+
+test('detag removes tag by name', function () {
+    $user = createUser();
+
+    $user->tag('Test Tag');
+
+    expect($user->tags)->toHaveCount(1);
+    $user->detag('Test Tag');
+    $user->refresh();
+    expect($user->tags)->toHaveCount(0);
 });

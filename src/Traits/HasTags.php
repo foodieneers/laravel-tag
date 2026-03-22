@@ -9,6 +9,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 trait HasTags
 {
+    public function tag(string $name): void
+    {
+        $tag = Tag::name($name);
+        $this->tags()->attach($tag->id, [
+            'created_at' => now(),
+        ]);
+        $this->unsetRelation('tags');
+    }
+
+    public function detag(string $name): void
+    {
+        $tag = Tag::query()->where('name', $name)->first();
+        if ($tag !== null) {
+            $this->tags()->detach($tag->id);
+            $this->unsetRelation('tags');
+        }
+    }
+
     /** @return BelongsToMany<Tag, $this> */
     public function tags(): BelongsToMany
     {
