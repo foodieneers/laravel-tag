@@ -18,7 +18,7 @@ class TestCase extends Orchestra
         );
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             TagServiceProvider::class,
@@ -29,7 +29,7 @@ class TestCase extends Orchestra
     {
         config()->set('database.default', 'testing');
 
-         foreach (File::allFiles(__DIR__ . '/../database/migrations') as $migration) {
+         foreach (new File()->allFiles(__DIR__ . '/../database/migrations') as $migration) {
             (include $migration->getRealPath())->up();
          }
     }
