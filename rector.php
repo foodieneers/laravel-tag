@@ -7,6 +7,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 use Rector\ValueObject\PhpVersion;
+use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Set\LaravelSetList;
 use RectorLaravel\Set\LaravelSetProvider;
 
@@ -42,6 +43,7 @@ return RectorConfig::configure()
         AddClosureVoidReturnTypeWhereNoReturnRector::class => [
             __DIR__.'/tests',
         ],
+        AddHasFactoryToModelsRector::class,
     ])
     ->withPreparedSets(
         deadCode: true,

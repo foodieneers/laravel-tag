@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property string $name @property string|null $description */
+/**
+ * @property string $name
+ * @property string|null $description
+ *  */
 final class Tag extends Model
 {
     /** @use HasFactory<TagFactory> */
@@ -18,6 +21,7 @@ final class Tag extends Model
     protected $fillable = [
         'name',
         'description',
+        'category_id',
     ];
 
     public static function name(string $name): self

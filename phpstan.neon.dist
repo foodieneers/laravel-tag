@@ -6,3 +6,7 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: false
+    ignoreErrors:
+        -
+            message: '#Trait Foodieneers\\Tag\\Traits\\HasTags is used zero times and is not analysed#'
+            path: src/Traits/HasTags.php
