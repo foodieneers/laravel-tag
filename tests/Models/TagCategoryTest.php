@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
+use Foodieneers\Tag\Models\Tag;
 use Foodieneers\Tag\Models\TagCategory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 test('name creates tag category when none exists', function () {
-    expect(TagCategory::count())->toBe(0);
+    expect(TagCategory::query()->count())->toBe(0);
 
     $tagCategory = TagCategory::name('technology');
 
     expect($tagCategory->name)->toBe('technology')
         ->and($tagCategory->description)->toBe('Automatically generated')
-        ->and(TagCategory::count())->toBe(1);
+        ->and(TagCategory::query()->count())->toBe(1);
 });
 
 test('name returns existing tag category when one exists', function () {
@@ -21,7 +23,7 @@ test('name returns existing tag category when one exists', function () {
 
     expect($tagCategory->id)->toBe($existing->id)
         ->and($tagCategory->description)->toBe('Original')
-        ->and(TagCategory::count())->toBe(1);
+        ->and(TagCategory::query()->count())->toBe(1);
 });
 
 test('tag category attributes', function () {
@@ -38,4 +40,14 @@ test('tag category attributes', function () {
     ];
 
     expect($actual)->toEqualCanonicalizing($expected);
+});
+
+test('tag category has tags', function () {
+    $tagCategory = TagCategory::factory()->create();
+    $tag = Tag::factory()->create(['category_id' => $tagCategory->id]);
+
+    expect($tagCategory->tags)->toHaveCount(1);
+    expect($tagCategory->tags())->toBeInstanceOf(HasMany::class);
+    expect($tagCategory->tags()->count())->toBe(1);
+    expect($tagCategory->tags()->first()->id)->toBe($tag->id);
 });

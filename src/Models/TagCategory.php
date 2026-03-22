@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Foodieneers\Tag\Models;
 
-use Foodieneers\Tag\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class TagCategory extends Model
+final class TagCategory extends Model
 {
-
     use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
@@ -18,14 +19,11 @@ class TagCategory extends Model
 
     public static function name(string $name): self
     {
-        return self::firstOrCreate(
-            ['name' => $name],
-            ['description' => 'Automatically generated']
-        );
+        return self::query()->firstOrCreate(['name' => $name], ['description' => 'Automatically generated']);
     }
 
     public function tags(): HasMany
     {
-        return $this->hasMany(Tag::class);
+        return $this->hasMany(Tag::class, 'category_id');
     }
 }

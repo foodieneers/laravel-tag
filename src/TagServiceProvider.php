@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Foodieneers\Tag;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Foodieneers\Tag\Commands\TagCommand;
 
-class TagServiceProvider extends PackageServiceProvider
+final class TagServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {

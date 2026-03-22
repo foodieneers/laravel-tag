@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Foodieneers\Tag\Database\Factories;
 
 use Foodieneers\Tag\Models\TagCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class TagCategoryFactory extends Factory
+final class TagCategoryFactory extends Factory
 {
     protected $model = TagCategory::class;
 
