@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 trait HasTags
 {
+    public static function bootHasTags(): void
+    {
+        Tag::setTaggableModel(static::class);
+    }
+
     public function tag(string $name): void
     {
         $tag = Tag::name($name);
