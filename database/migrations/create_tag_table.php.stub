@@ -8,10 +8,18 @@ return new class extends Migration
 {
     public function up()
     {
+        Schema::create('tag_categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
             $table->text('description')->nullable();
+            $table->foreignId('category_id')->nullable();
             $table->timestamps();
         });
     }
