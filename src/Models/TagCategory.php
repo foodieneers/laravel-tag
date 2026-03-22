@@ -8,6 +8,7 @@ use Foodieneers\Tag\Database\Factories\TagCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Override;
 
 /** @property string $name @property string|null $description */
 final class TagCategory extends Model
@@ -15,6 +16,7 @@ final class TagCategory extends Model
     /** @use HasFactory<TagCategoryFactory> */
     use HasFactory;
 
+    #[Override]
     protected $fillable = [
         'name',
         'description',

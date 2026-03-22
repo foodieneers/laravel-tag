@@ -17,10 +17,10 @@ trait HasTags
     public function tag(string $name): void
     {
         $tag = Tag::name($name);
-        $this->tags()->attach($tag->id, [
-            'created_at' => now(),
-        ]);
-        $this->unsetRelation('tags');
+        if (! $this->tags()->where('tag_id', $tag->id)->exists()) {
+            $this->tags()->attach($tag->id, ['created_at' => now()]);
+            $this->unsetRelation('tags');
+        }
     }
 
     public function detag(string $name): void

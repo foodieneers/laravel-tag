@@ -81,3 +81,25 @@ test('detag removes tag by name', function () {
     $user->refresh();
     expect($user->tags)->toHaveCount(0);
 });
+
+test('user tagged twice does not create duplicate tag', function () {
+    $user = createUser();
+
+    $user->tag('Test Tag');
+    $user->tag('Test Tag');
+
+    expect($user->tags)->toHaveCount(1);
+});
+
+test('tagging user twice does not overwrite original created_at timestamp', function () {
+    $user = createUser();
+    $tag = Tag::name('Test Tag');
+    $yesterday = now()->subDay();
+
+    $user->tags()->attach($tag->id, ['created_at' => $yesterday]);
+
+    $user->tag('Test Tag');
+
+    expect($user->fresh()->tags->first()->pivot->created_at->toDateTimeString())
+        ->toBe($yesterday->toDateTimeString());
+});
