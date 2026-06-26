@@ -103,3 +103,41 @@ test('tagging user twice does not overwrite original created_at timestamp', func
     expect($user->fresh()->tags->first()->pivot->created_at->toDateTimeString())
         ->toBe($yesterday->toDateTimeString());
 });
+
+test('hasTag returns true when user has the tag', function () {
+    $user = createUser();
+
+    $user->tag('developer');
+
+    expect($user->hasTag('developer'))->toBeTrue();
+});
+
+test('hasTag returns false when user does not have the tag', function () {
+    $user = createUser();
+
+    $user->tag('developer');
+
+    expect($user->hasTag('admin'))->toBeFalse();
+});
+
+test('hasTag returns false when tag does not exist', function () {
+    $user = createUser();
+
+    expect($user->hasTag('nonexistent'))->toBeFalse();
+});
+
+test('hasNotTag returns false when user has the tag', function () {
+    $user = createUser();
+
+    $user->tag('developer');
+
+    expect($user->hasNotTag('developer'))->toBeFalse();
+});
+
+test('hasNotTag returns true when user does not have the tag', function () {
+    $user = createUser();
+
+    $user->tag('developer');
+
+    expect($user->hasNotTag('admin'))->toBeTrue();
+});

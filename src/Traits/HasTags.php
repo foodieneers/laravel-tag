@@ -32,6 +32,16 @@ trait HasTags
         }
     }
 
+    public function hasTag(string $name): bool
+    {
+        return $this->tags()->where('name', $name)->exists();
+    }
+
+    public function hasNotTag(string $name): bool
+    {
+        return ! $this->hasTag($name);
+    }
+
     /** @return BelongsToMany<Tag, $this> */
     public function tags(): BelongsToMany
     {
