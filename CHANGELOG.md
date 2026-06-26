@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-tag` will be documented in this file.
 
+## v1.0.5 - 2026-06-26
+
+Fixed migration tag
+**Full Changelog**: https://github.com/foodieneers/laravel-tag/compare/v1.0.4...v1.0.5
+
 ## v1.0.4 - 2026-06-26
 
 ### What's Changed
