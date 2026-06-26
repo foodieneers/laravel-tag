@@ -18,6 +18,6 @@ final class TagServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-tag')
-            ->hasMigration('create_laravel_tag_table');
+            ->hasMigration('create_tags_tables.php.stub');
     }
 }
