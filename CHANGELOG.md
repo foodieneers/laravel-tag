@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-tag` will be documented in this file.
 
+## v1.1.0 - 2026-06-26
+
+### Features
+
+* Added hasTag() and hasNotTag() to check for tags
+
+**Full Changelog**: https://github.com/foodieneers/laravel-tag/compare/v1.0.5...v1.1.0
+
 ## v1.0.5 - 2026-06-26
 
 Fixed migration tag
