@@ -5,27 +5,25 @@ declare(strict_types=1);
 namespace Foodieneers\Tag\Models;
 
 use Foodieneers\Tag\Database\Factories\TagFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Override;
 
 /**
  * @property string $name
  * @property string|null $description
  *  */
+#[Fillable([
+    'name',
+    'description',
+    'category_id',
+])]
 final class Tag extends Model
 {
     /** @use HasFactory<TagFactory> */
     use HasFactory;
-
-    #[Override]
-    protected $fillable = [
-        'name',
-        'description',
-        'category_id',
-    ];
 
     /** @var class-string<Model> */
     private static string $taggableModel = Model::class;

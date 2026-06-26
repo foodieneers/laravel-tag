@@ -16,7 +16,7 @@ composer require foodieneers/laravel-tag
 Publish and run the migrations:
 
 ```bash
-php artisan vendor:publish --tag="laravel-tag-migrations"
+php artisan vendor:publish --tag="tag-migrations"
 php artisan migrate
 ```
 
