@@ -14,9 +14,8 @@ test('user can have tags', function () {
     $user->tags()->attach([$tag1->id, $tag2->id]);
 
     expect($user->tags)->toHaveCount(2)
-        ->and($user->tags->pluck('name')->toArray())->toEqualCanonicalizing(['developer', 'admin']);
-
-    expect($user->tags())->toBeInstanceOf(BelongsToMany::class);
+        ->and($user->tags->pluck('name')->toArray())->toEqualCanonicalizing(['developer', 'admin'])
+        ->and($user->tags())->toBeInstanceOf(BelongsToMany::class);
 });
 
 test('user can attach and detach tags', function () {
@@ -27,7 +26,7 @@ test('user can attach and detach tags', function () {
     expect($user->fresh()->tags)->toHaveCount(1);
 
     $user->tags()->detach($tag->id);
-    expect($user->fresh()->tags)->toHaveCount(0);
+    expect($user->fresh()->tags)->toBeEmpty();
 });
 
 test('user can sync tags', function () {
@@ -62,8 +61,8 @@ test('tag attaches tag by name', function () {
 
     $user->tag('Test Tag');
 
-    expect($user->tags)->toHaveCount(1);
-    expect($user->tags->first()->name)->toBe('Test Tag');
+    expect($user->tags)->toHaveCount(1)
+        ->and($user->tags->first()->name)->toBe('Test Tag');
     $pivot = $user->tags->first()->pivot;
     expect($pivot->created_at)
         ->not->toBeNull()
@@ -79,7 +78,7 @@ test('detag removes tag by name', function () {
     expect($user->tags)->toHaveCount(1);
     $user->detag('Test Tag');
     $user->refresh();
-    expect($user->tags)->toHaveCount(0);
+    expect($user->tags)->toBeEmpty();
 });
 
 test('user tagged twice does not create duplicate tag', function () {

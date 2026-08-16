@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Pest\Rector\Set\PestSetList;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
-use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
 use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
@@ -15,6 +15,7 @@ return RectorConfig::configure()
     ->withPhpVersion(PhpVersion::PHP_85)
     ->withSetProviders(LaravelSetProvider::class)
     ->withSets([
+        PestSetList::CODING_STYLE,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
         LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
         LaravelSetList::LARAVEL_CODE_QUALITY,
@@ -37,9 +38,9 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/src',
         __DIR__.'/tests',
+        __DIR__.'/database',
     ])
     ->withSkip([
-        AddOverrideAttributeToOverriddenMethodsRector::class,
         AddClosureVoidReturnTypeWhereNoReturnRector::class => [
             __DIR__.'/tests',
         ],

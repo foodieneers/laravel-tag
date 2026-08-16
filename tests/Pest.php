@@ -6,7 +6,7 @@ use Foodieneers\Tag\Models\Tag;
 use Foodieneers\Tag\Tests\Models\User;
 use Foodieneers\Tag\Tests\TestCase;
 
-uses(TestCase::class)->in(__DIR__);
+pest()->extend(TestCase::class)->in(__DIR__);
 
 function createUser(): User
 {

@@ -49,8 +49,8 @@ test('tag has category', function () {
     $tag->category()->associate($category);
     $tag->save();
 
-    expect($tag->category)->toBeInstanceOf(TagCategory::class);
-    expect($tag->category->id)->toBe($category->id);
+    expect($tag->category)->toBeInstanceOf(TagCategory::class)
+        ->and($tag->category->id)->toBe($category->id);
 });
 
 test('tagged returns BelongsToMany relation', function () {

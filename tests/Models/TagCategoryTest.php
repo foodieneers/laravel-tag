@@ -46,8 +46,8 @@ test('tag category has tags', function () {
     $tagCategory = TagCategory::factory()->create();
     $tag = Tag::factory()->create(['category_id' => $tagCategory->id]);
 
-    expect($tagCategory->tags)->toHaveCount(1);
-    expect($tagCategory->tags())->toBeInstanceOf(HasMany::class);
-    expect($tagCategory->tags()->count())->toBe(1);
-    expect($tagCategory->tags()->first()->id)->toBe($tag->id);
+    expect($tagCategory->tags)->toHaveCount(1)
+        ->and($tagCategory->tags())->toBeInstanceOf(HasMany::class)
+        ->and($tagCategory->tags()->count())->toBe(1)
+        ->and($tagCategory->tags()->first()->id)->toBe($tag->id);
 });
