@@ -6,10 +6,12 @@ namespace Foodieneers\Tag\Database\Factories;
 
 use Foodieneers\Tag\Models\TagCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
 /** @extends Factory<TagCategory> */
 final class TagCategoryFactory extends Factory
 {
+    #[Override]
     protected $model = TagCategory::class;
 
     public function definition(): array

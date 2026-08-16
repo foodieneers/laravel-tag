@@ -22,7 +22,7 @@
         "illuminate/contracts": "^11.0||^12.0||^13.0"
     },
     "require-dev": {
-        "foodieneers/laravel-devtools": "dev-main",
+        "foodieneers/laravel-devtools": "^1.5",
         "matthewbdaly/artisan-standalone": "*",
         "nunomaduro/mock-final-classes": "^1.2",
         "orchestra/testbench": "*"
@@ -53,7 +53,7 @@
     ],
     "pest": "pest",
     "test:unit": "pest --parallel --coverage --exactly=100.0",
-    "test:types": "phpstan --memory-limit=2G",
+    "test:types": "phpstan --ansi",
      "test": [
         "@test:type-coverage",
         "@test:unit",
@@ -64,6 +64,7 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
+            "llm/skills": true,
             "pestphp/pest-plugin": true,
             "phpstan/extension-installer": true
         }
@@ -73,6 +74,9 @@
             "providers": [
                 "Foodieneers\\Tag\\TagServiceProvider"
             ]
+        },
+        "skills": {
+            "discover": true
         }
     },
     "minimum-stability": "dev",
