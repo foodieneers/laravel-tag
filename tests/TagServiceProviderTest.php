@@ -22,3 +22,18 @@ it('publishes the tags tables migration', function () {
         ->toContain("Schema::create('tags'")
         ->toContain("Schema::create('tag_model'");
 });
+
+it('publishes the tag config', function () {
+    Artisan::call('vendor:publish', [
+        '--tag' => 'tag-config',
+        '--force' => true,
+    ]);
+
+    $configPath = config_path('tag.php');
+
+    expect(File::exists($configPath))->toBeTrue();
+
+    $contents = File::get($configPath);
+
+    expect($contents)->toContain("'taggable_model'");
+});

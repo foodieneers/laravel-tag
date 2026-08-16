@@ -54,14 +54,12 @@ test('tag has category', function () {
 });
 
 test('tagged returns BelongsToMany relation', function () {
-    Tag::setTaggableModel(User::class);
     $tag = Tag::factory()->create();
 
     expect($tag->tagged())->toBeInstanceOf(BelongsToMany::class);
 });
 
 test('tagged returns models attached to tag', function () {
-    Tag::setTaggableModel(User::class);
     $user = createUser();
     $tag = Tag::factory()->create(['name' => 'attached-tag']);
     $user->tags()->attach($tag->id, ['created_at' => now()]);
@@ -72,7 +70,6 @@ test('tagged returns models attached to tag', function () {
 });
 
 test('tagged pivot includes created_at', function () {
-    Tag::setTaggableModel(User::class);
     $user = createUser();
     $tag = Tag::factory()->create(['name' => 'pivot-tag']);
     $user->tags()->attach($tag->id, ['created_at' => now()]);
@@ -84,11 +81,8 @@ test('tagged pivot includes created_at', function () {
         ->and($pivot->created_at)->not->toBeNull();
 });
 
-test('setTaggableModel configures which model tagged returns', function () {
-    Tag::setTaggableModel(User::class);
-    $user = createUser();
-    $tag = Tag::factory()->create(['name' => 'config-tag']);
-    $user->tags()->attach($tag->id, ['created_at' => now()]);
+test('tagged uses configured taggable model', function () {
+    $tag = Tag::factory()->create();
 
-    expect($tag->tagged->first())->toBeInstanceOf(User::class);
+    expect($tag->tagged()->getRelated())->toBeInstanceOf(User::class);
 });

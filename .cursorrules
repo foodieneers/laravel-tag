@@ -8,9 +8,9 @@ You are editing a **Laravel package**, not a Laravel application. Ignore app-cen
 
 In scope: `Tag`, `TagCategory`, `HasTags`, the `tags` / `tag_categories` / `tag_model` schema, and Testbench tests.
 
-Out of scope unless explicitly requested: HTTP routes, controllers, views, Livewire, Filament, jobs, events, notifications, app-level auth, or a published config file (none exists today).
+Out of scope unless explicitly requested: HTTP routes, controllers, views, Livewire, Filament, jobs, events, notifications, or app-level auth.
 
-This is **not** polymorphic tagging. `Tag::$taggableModel` is a single class-string set by `HasTags::bootHasTags()`. One taggable model class at a time.
+This is **not** polymorphic tagging. One taggable model class per app, set in `config/tag.php` as `taggable_model`. `$tag->tagged()` reads that class. Do not restore `Tag::setTaggableModel()` or `HasTags::bootHasTags()`.
 
 ## Key Directory Structure
 
@@ -20,6 +20,8 @@ src/
   Models/Tag.php
   Models/TagCategory.php
   Traits/HasTags.php
+config/
+  tag.php                         # taggable_model; published as tag-config
 database/
   factories/                      # TagFactory, TagCategoryFactory (shipped with package)
   migrations/create_tags_tables.php.stub   # published to the host app
@@ -30,7 +32,6 @@ tests/
   ArchTest.php
   Models/                         # mirrors src/Models
   Traits/                         # mirrors src/Traits
-config/                           # DOES NOT EXIST
 ```
 
 These folders **do not exist**. Create them only when the feature is real, and register them through `TagServiceProvider::configurePackage()`:
@@ -58,16 +59,17 @@ public function configurePackage(Package $package): void
 {
     $package
         ->name('laravel-tag')
+        ->hasConfigFile()
         ->hasMigration('create_tags_tables');
 }
 ```
 
-- Package name stays `laravel-tag`. Spatie publish tags become `tag-migrations` (and `tag-config` if a config file is added).
+- Package name stays `laravel-tag`. Spatie publish tags are `tag-migrations` and `tag-config`.
 - There are **no container bindings today**. Do not bind `Tag` or `TagCategory`; they are Eloquent models.
 - If a service is added: type-hint a contract, bind in `packageRegistered()` with `$this->app->singleton(Contract::class, Implementation::class)`. Do not use string aliases (`'tag'`, `'tags'`).
 - Prefer `packageRegistered()` / `packageBooted()` over overriding `register()` / `boot()`.
 - Provider is auto-discovered via Composer. Do not also register it in a host `bootstrap/providers.php` from this repo.
-- `Tag::setTaggableModel()` is a static setter, not a container binding. `HasTags::bootHasTags()` already calls it. Do not duplicate that in the provider.
+- Taggable model class lives in `config('tag.taggable_model')`. Tests override it to `Foodieneers\Tag\Tests\Models\User`. Do not add a static setter.
 
 ### Naming conventions
 
@@ -76,7 +78,7 @@ public function configurePackage(Package $package): void
 - Trait: `HasTags` in `src/Traits/`.
 - Models: `Tag`, `TagCategory`. Tables: `tags`, `tag_categories`, pivot `tag_model` (`tag_id`, `model_id`, `created_at`).
 - Factories: `{Model}Factory` next to the model name, `protected $model` with `#[Override]`.
-- Config keys (if added): `config('tag.*')` only. Never `config('app.*')`, `config('laravel-tag.*')`, or `env()` outside a config file.
+- Config keys: `config('tag.*')` only. Never `config('app.*')`, `config('laravel-tag.*')`, or `env()` outside a config file.
 - Fillable via `#[Fillable([...])]`, not a `$fillable` property.
 - Get-or-create helpers stay `Model::name(string $name): self`.
 - Prefer `self::` / `static::` over the class name inside the class (Pint `self_accessor`).
@@ -100,8 +102,8 @@ Pest + Orchestra Testbench. Not PHPUnit class tests. Not `php artisan test` as t
 - Bootstrap: `pest()->extend(TestCase::class)->in(__DIR__);` in `tests/Pest.php`.
 - Style: `test('description', function () { ... })` or `it('...', function () { ... })`. `declare(strict_types=1);` at the top. `expect()` assertions.
 - New tests go next to the unit under test: `tests/Models/TagTest.php`, `tests/Traits/HasTagsTest.php`. Do not introduce `tests/Feature` or `tests/Unit`.
-- Use factories (`Tag::factory()`, `TagCategory::factory()`). For a taggable model, call `createUser()` from `Pest.php` (it sets `Tag::setTaggableModel(User::class)`).
-- Any test that uses `Tag::tagged()` must call `Tag::setTaggableModel(User::class)` first.
+- Use factories (`Tag::factory()`, `TagCategory::factory()`). For a taggable model, call `createUser()` from `Pest.php`.
+- `TestCase::setUp()` sets `config('tag.taggable_model')` to the test `User`. Do not call a taggable-model setter in tests.
 - Arch: no `dd`, `dump`, or `ray`. Keep `tests/ArchTest.php`.
 - Do not delete tests. Cover happy path, missing tag, duplicate attach, and pivot `created_at`.
 - Run: `vendor/bin/pest --filter=...` while iterating. Full gate: `composer test` (type coverage, unit 100%, Pint, Rector dry-run, PHPStan).
@@ -124,7 +126,7 @@ test('name returns existing tag when one exists', function () {
 - Hardcode host config: `config('app.*')`, `env('APP_*')`, `config('database.*')` in `src/` (tests may set `database.default`).
 - Edit `vendor/`, published host migrations, or tell consumers to patch vendor files. Change `database/migrations/create_tags_tables.php.stub` and cover publish in `tests/TagServiceProviderTest.php`.
 - Rename tables (`tags`, `tag_categories`, `tag_model`) or pivot columns without a new migration stub + tests.
-- Turn tagging polymorphic (`taggable_type`) unless that is the requested feature. Current design is one taggable class via `Tag::setTaggableModel()`.
+- Turn tagging polymorphic (`taggable_type`) unless that is the requested feature. Current design is one taggable class via `config('tag.taggable_model')`.
 - Attach duplicates or overwrite pivot `created_at` on a second `tag()`. `HasTags::tag()` must no-op when the tag is already attached.
 - Add a config file without `->hasConfigFile()` and `config('tag.*')`.
 - Bind models as singletons, or add Facades/Commands/routes with nothing to back them.

@@ -2,6 +2,7 @@
 
 namespace Foodieneers\Tag\Tests;
 
+use Foodieneers\Tag\Tests\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -12,6 +13,8 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        config()->set('tag.taggable_model', User::class);
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName): string => 'Foodieneers\\Tag\\Database\\Factories\\'.class_basename($modelName).'Factory'

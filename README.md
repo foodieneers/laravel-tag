@@ -13,11 +13,18 @@ A Laravel package for tagging Eloquent models. Add the `HasTags` trait to any mo
 composer require foodieneers/laravel-tag
 ```
 
-Publish and run the migrations:
+Publish the config and migrations, then migrate:
 
 ```bash
+php artisan vendor:publish --tag="tag-config"
 php artisan vendor:publish --tag="tag-migrations"
 php artisan migrate
+```
+
+Set the taggable model in `config/tag.php` (defaults to `App\Models\User`):
+
+```php
+'taggable_model' => App\Models\User::class,
 ```
 
 Add the `HasTags` trait to your model (e.g. `User`):
@@ -80,14 +87,6 @@ Get or create a tag by name. Creates with `description => 'Automatically generat
 
 ```php
 $tag = Tag::name('laravel');
-```
-
-#### `Tag::setTaggableModel(string $class): void`
-
-Sets which model class is taggable. Called automatically by `HasTags::bootHasTags()`. Only needed if you use multiple taggable models or customize behavior.
-
-```php
-Tag::setTaggableModel(User::class);
 ```
 
 #### `$tag->tagged(): BelongsToMany`
