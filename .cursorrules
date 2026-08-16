@@ -1,0 +1,139 @@
+# foodieneers/laravel-tag
+
+You are editing a **Laravel package**, not a Laravel application. Ignore app-centric Boost guidance (Filament, Livewire, Volt, Tailwind, `app/`, `php artisan make:*` for app files). Follow this file and existing siblings in `src/`, `database/`, and `tests/`.
+
+## Package Purpose & Scope
+
+`foodieneers/laravel-tag` (`Foodieneers\Tag`) tags Eloquent models. Consumers add `HasTags` to a model, then attach/detach tags by name.
+
+In scope: `Tag`, `TagCategory`, `HasTags`, the `tags` / `tag_categories` / `tag_model` schema, and Testbench tests.
+
+Out of scope unless explicitly requested: HTTP routes, controllers, views, Livewire, Filament, jobs, events, notifications, app-level auth, or a published config file (none exists today).
+
+This is **not** polymorphic tagging. `Tag::$taggableModel` is a single class-string set by `HasTags::bootHasTags()`. One taggable model class at a time.
+
+## Key Directory Structure
+
+```
+src/
+  TagServiceProvider.php          # only service provider (Spatie PackageServiceProvider)
+  Models/Tag.php
+  Models/TagCategory.php
+  Traits/HasTags.php
+database/
+  factories/                      # TagFactory, TagCategoryFactory (shipped with package)
+  migrations/create_tags_tables.php.stub   # published to the host app
+  migrations/create_users_table.php        # Testbench-only; do not publish
+tests/
+  TestCase.php                    # Orchestra Testbench
+  Pest.php                        # Pest bootstrap + helpers
+  ArchTest.php
+  Models/                         # mirrors src/Models
+  Traits/                         # mirrors src/Traits
+config/                           # DOES NOT EXIST
+```
+
+These folders **do not exist**. Create them only when the feature is real, and register them through `TagServiceProvider::configurePackage()`:
+
+| Kind | Path | Registration |
+|---|---|---|
+| Service provider | `src/TagServiceProvider.php` | `composer.json` `extra.laravel.providers` |
+| Contracts | `src/Contracts/` | Bind in `packageRegistered()` |
+| Facades | `src/Facades/` | Accessor must resolve a container binding |
+| Services | `src/Services/` | Bind interface → implementation as singleton |
+| Commands | `src/Commands/` | `->hasCommand(SomeCommand::class)` |
+| Config | `config/tag.php` | `->hasConfigFile('tag')` then `config('tag.*')` |
+| Migrations | `database/migrations/*.php.stub` | `->hasMigration('create_tags_tables')` |
+
+Do not invent `app/`, `routes/`, `resources/views/`, or `tests/Feature` / `tests/Unit`. Tests mirror `src/`.
+
+## Architecture Rules
+
+### Service provider & bindings
+
+`TagServiceProvider` extends `Spatie\LaravelPackageTools\PackageServiceProvider`. Keep it `final`.
+
+```php
+public function configurePackage(Package $package): void
+{
+    $package
+        ->name('laravel-tag')
+        ->hasMigration('create_tags_tables');
+}
+```
+
+- Package name stays `laravel-tag`. Spatie publish tags become `tag-migrations` (and `tag-config` if a config file is added).
+- There are **no container bindings today**. Do not bind `Tag` or `TagCategory`; they are Eloquent models.
+- If a service is added: type-hint a contract, bind in `packageRegistered()` with `$this->app->singleton(Contract::class, Implementation::class)`. Do not use string aliases (`'tag'`, `'tags'`).
+- Prefer `packageRegistered()` / `packageBooted()` over overriding `register()` / `boot()`.
+- Provider is auto-discovered via Composer. Do not also register it in a host `bootstrap/providers.php` from this repo.
+- `Tag::setTaggableModel()` is a static setter, not a container binding. `HasTags::bootHasTags()` already calls it. Do not duplicate that in the provider.
+
+### Naming conventions
+
+- Namespace: `Foodieneers\Tag\` (src), `Foodieneers\Tag\Database\Factories\` (factories), `Foodieneers\Tag\Tests\` (tests).
+- Classes: PascalCase, **`final`**. Interfaces: PascalCase, no `I` prefix (`Taggable`, not `ITaggable`).
+- Trait: `HasTags` in `src/Traits/`.
+- Models: `Tag`, `TagCategory`. Tables: `tags`, `tag_categories`, pivot `tag_model` (`tag_id`, `model_id`, `created_at`).
+- Factories: `{Model}Factory` next to the model name, `protected $model` with `#[Override]`.
+- Config keys (if added): `config('tag.*')` only. Never `config('app.*')`, `config('laravel-tag.*')`, or `env()` outside a config file.
+- Fillable via `#[Fillable([...])]`, not a `$fillable` property.
+- Get-or-create helpers stay `Model::name(string $name): self`.
+- Prefer `self::` / `static::` over the class name inside the class (Pint `self_accessor`).
+
+### Strict typing
+
+- PHP **^8.5**. Rector `PhpVersion::PHP_85`. Do not write 8.2-era workarounds.
+- Every PHP file: `declare(strict_types=1);` (exception: `tests/TestCase.php` is Pint-excluded; do not “fix” it unless asked).
+- Explicit parameter, return, and property types. No untyped public API.
+- PHPDoc for generics and array shapes: `@return BelongsTo<TagCategory, $this>`, `@param class-string<Model> $class`, `@use HasFactory<TagFactory>`.
+- `===` / `!==` only. Early return. No `else` after return.
+- PHPStan **level max** on `src` and `database`. Type coverage **100%**. Unit coverage **exactly 100%**.
+- Pint: Laravel preset + `final_class`, `declare_strict_types`, `strict_comparison`, `ordered_class_elements`.
+- After edits: `vendor/bin/pint --dirty`, then the smallest Pest filter that covers the change.
+
+## Testing Standards
+
+Pest + Orchestra Testbench. Not PHPUnit class tests. Not `php artisan test` as the primary runner.
+
+- Base: `tests/TestCase.php` extends `Orchestra\Testbench\TestCase`, registers `TagServiceProvider`, sets `database.default` to `testing`, and runs **every** file in `database/migrations` (stub + test-only `users` table).
+- Bootstrap: `pest()->extend(TestCase::class)->in(__DIR__);` in `tests/Pest.php`.
+- Style: `test('description', function () { ... })` or `it('...', function () { ... })`. `declare(strict_types=1);` at the top. `expect()` assertions.
+- New tests go next to the unit under test: `tests/Models/TagTest.php`, `tests/Traits/HasTagsTest.php`. Do not introduce `tests/Feature` or `tests/Unit`.
+- Use factories (`Tag::factory()`, `TagCategory::factory()`). For a taggable model, call `createUser()` from `Pest.php` (it sets `Tag::setTaggableModel(User::class)`).
+- Any test that uses `Tag::tagged()` must call `Tag::setTaggableModel(User::class)` first.
+- Arch: no `dd`, `dump`, or `ray`. Keep `tests/ArchTest.php`.
+- Do not delete tests. Cover happy path, missing tag, duplicate attach, and pivot `created_at`.
+- Run: `vendor/bin/pest --filter=...` while iterating. Full gate: `composer test` (type coverage, unit 100%, Pint, Rector dry-run, PHPStan).
+
+```php
+test('name returns existing tag when one exists', function () {
+    $existing = Tag::factory()->create(['name' => 'laravel', 'description' => 'Original']);
+
+    $tag = Tag::name('laravel');
+
+    expect($tag->id)->toBe($existing->id)
+        ->and($tag->description)->toBe('Original')
+        ->and(Tag::query()->count())->toBe(1);
+});
+```
+
+## Common Pitfalls — NEVER
+
+- Treat this repo as a Laravel app (`app/Http`, Livewire, Filament, Volt, Tailwind, `bootstrap/app.php`).
+- Hardcode host config: `config('app.*')`, `env('APP_*')`, `config('database.*')` in `src/` (tests may set `database.default`).
+- Edit `vendor/`, published host migrations, or tell consumers to patch vendor files. Change `database/migrations/create_tags_tables.php.stub` and cover publish in `tests/TagServiceProviderTest.php`.
+- Rename tables (`tags`, `tag_categories`, `tag_model`) or pivot columns without a new migration stub + tests.
+- Turn tagging polymorphic (`taggable_type`) unless that is the requested feature. Current design is one taggable class via `Tag::setTaggableModel()`.
+- Attach duplicates or overwrite pivot `created_at` on a second `tag()`. `HasTags::tag()` must no-op when the tag is already attached.
+- Add a config file without `->hasConfigFile()` and `config('tag.*')`.
+- Bind models as singletons, or add Facades/Commands/routes with nothing to back them.
+- Drop `final`, `declare(strict_types=1)`, return types, or PHPStan-level types.
+- Use `$fillable` / `$casts` properties; follow `#[Fillable]` and `casts()` if casts are needed.
+- Put factories under `database/factories` without the `Foodieneers\Tag\Database\Factories\` namespace, or break `Factory::guessFactoryNamesUsing` in `TestCase`.
+- Publish `create_users_table.php`; it is test-only.
+- Lower coverage below 100%, skip Pint/Rector/PHPStan, or remove Arch tests.
+- Change Composer package name, namespace, or `extra.laravel.providers` without an explicit request.
+- Add `down()`-less production migrations that conflict with the existing stub; keep schema changes in the stub while the package is pre-1.0 unless a follow-up migration is requested.
+- Use `DB::` when Eloquent relations already exist (`tags()`, `tagged()`, `category()`).
+- Commit `.env`, credentials, or host-app paths.
