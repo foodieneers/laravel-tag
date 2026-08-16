@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-tag` will be documented in this file.
 
+## v1.2.0 - 2026-08-16
+
+**Full Changelog**: https://github.com/foodieneers/laravel-tag/compare/v1.1.0...v1.2.0
+
+Removed taggable and added config `tag.php`
+
 ## v1.1.0 - 2026-06-26
 
 ### Features
